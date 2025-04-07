@@ -1,86 +1,120 @@
-HousePricePredictor
+# 🏠 House Price Predictor
 
-این پروژه یک مدل یادگیری ماشین است که برای پیش‌بینی قیمت خانه‌ها بر اساس ویژگی‌های مختلف مانند مساحت، تعداد اتاق‌ها، امکانات موجود و آدرس استفاده می‌کند.
-📦 پیش‌نیازها
+This project is a machine learning-based system designed to predict house prices based on various features such as area, number of rooms, amenities, and location.
 
-    Python 3.x
+---
 
-    pip
+## 📦 Requirements
 
-    pandas
+- Python 3.x  
+- pip  
+- pandas  
+- numpy  
+- scikit-learn  
+- matplotlib  
+- seaborn  
+- streamlit  
+- requests  
 
-    numpy
+To install all dependencies, use the `requirements.txt` file.
 
-    scikit-learn
+---
 
-    matplotlib
+## ⚙️ Installation
 
-    seaborn
+1. **Create a virtual environment**:
 
-    streamlit
-
-    request
-
-برای نصب پیش‌نیازها، از فایل requirements.txt استفاده کنید.
-نصب پیش‌نیازها
-
-    ابتدا یک محیط مجازی جدید ایجاد کنید:
-
+```bash
 python3 -m venv venv
+```
 
-محیط مجازی را فعال کنید:
+2. **Activate the virtual environment**:
 
-    در لینوکس:
+- On Linux/macOS:
+```bash
+source venv/bin/activate
+```
 
-    source venv/bin/activate
+3. **Install the dependencies**:
 
-پیش‌نیازها را نصب کنید:
+```bash
+pip install -r requirements.txt
+```
 
-    pip install -r requirements.txt
+---
 
-🚀 نحوه استفاده
+## 🚀 Usage
 
-    خواندن داده‌ها: ابتدا دیتاست خود را در قالب فایل CSV وارد کنید.
+### 1. Load the dataset  
+Import your dataset in CSV format.
 
-    پردازش داده‌ها: داده‌ها به‌طور خودکار پردازش می‌شوند؛ این شامل حذف مقادیر گم‌شده، حذف مقادیر پرت، و تبدیل داده‌ها به فرمت‌های مناسب می‌باشد.
+### 2. Data Preprocessing  
+The data is automatically cleaned, including:
+- Removing missing values  
+- Removing outliers  
+- Converting data into proper formats
 
-    مدل‌سازی: از مدل‌های درخت تصمیم و جنگل تصادفی برای پیش‌بینی قیمت خانه‌ها استفاده می‌شود.
+### 3. Modeling  
+This project uses the following models:
+- **Decision Tree**
+- **Random Forest**
 
-    نمایش نتایج: نتایج پیش‌بینی با استفاده از کتابخانه streamlit به صورت گرافیکی نمایش داده می‌شوند.
+### 4. Visualizing the Results  
+The predictions are visualized using **Streamlit** for an interactive UI.
 
-اجرای پروژه
+---
 
-برای اجرای پروژه، از کد زیر استفاده کنید:
+## ▶️ Running the Project
 
+To run the project in the terminal:
+
+```bash
 python main.py
+```
 
-نمایش گرافیکی با Streamlit
+To launch the Streamlit app:
 
-برای مشاهده‌ی نتایج به صورت گرافیکی، می‌توانید از streamlit استفاده کنید:
-
+```bash
 streamlit run app.py
+```
 
-🔧 توابع اصلی
+---
 
-    read_dataset(file_path): این تابع فایل CSV را می‌خواند و آن را به یک DataFrame تبدیل می‌کند.
+## 🔧 Core Functions
 
-    preprocess_data(data): داده‌ها را پردازش کرده و ستون‌های اضافی را حذف و تبدیل‌های لازم را انجام می‌دهد.
+- `read_dataset(file_path)`  
+  Loads a CSV file and returns a pandas DataFrame.
 
-    remove_outlier(data): مقادیر پرت را از داده‌ها حذف می‌کند.
+- `preprocess_data(data)`  
+  Cleans and transforms the data by removing irrelevant columns and handling missing values.
 
-    show_dataframe(df): نمایش داده‌ها به صورت جدول با استفاده از tabulate.
+- `remove_outlier(data)`  
+  Detects and removes outliers from the dataset.
 
-📈 مدل‌های یادگیری ماشین
+- `show_dataframe(df)`  
+  Displays the DataFrame in a formatted table using `tabulate`.
 
-    درخت تصمیم (Decision Tree): برای پیش‌بینی قیمت خانه‌ها با استفاده از ویژگی‌های مختلف.
+---
 
-    جنگل تصادفی (Random Forest): یک مدل پیشرفته‌تر که از مجموعه‌ای از درختان تصمیم استفاده می‌کند.
+## 🤖 Machine Learning Models
 
-🔍 نتایج
+- **Decision Tree**  
+  Predicts house prices using input features like area, number of rooms, and location.
 
-نتایج پیش‌بینی‌ها به‌طور گرافیکی نمایش داده می‌شود و شما می‌توانید مشاهده کنید که چگونه مدل‌ها قیمت خانه‌ها را بر اساس ویژگی‌های مختلف پیش‌بینی می‌کنند.
-🛠 توسعه‌دهندگان
+- **Random Forest**  
+  An ensemble model built from multiple decision trees to improve accuracy and robustness.
 
-    نام شما
+---
 
-    لینک به پروفایل گیت‌هاب شما
+## 📊 Output
+
+Model predictions are visualized using charts and tables, allowing users to explore how different features influence the predicted house prices.
+
+---
+
+## 👨‍💻 Developed by
+
+- **Mohammadreza Sharifi**  
+  [GitHub Profile](https://github.com/Mo-sharifi)
+
+---
