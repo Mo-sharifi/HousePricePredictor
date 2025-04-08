@@ -16,8 +16,8 @@ def get_all_addresses():
     """
 
     data = load_data()
-    if data is not None and 'Address' in data.columns:
-        return data['Address'].dropna().tolist()
+    if data is not None and "Address" in data.columns:
+        return data["Address"].dropna().tolist()
     else:
         print("❌ Error: 'Address' column not found in the DataFrame.")
         return []
@@ -33,7 +33,7 @@ def get_coordinates(place_name, api_key=API_KEY):
         api_key (str): The API key for accessing the OpenCage API.
 
     Returns:
-        tuple[float, float] | tuple[None, None]: 
+        tuple[float, float] | tuple[None, None]:
             A tuple containing latitude and longitude.
             Returns (None, None) if the request fails or no result is found.
 
@@ -46,9 +46,9 @@ def get_coordinates(place_name, api_key=API_KEY):
         r = requests.get(url)
         if r.status_code == 200:
             result = r.json()
-            if result['results']:
-                geometry = result['results'][0]['geometry']
-                return geometry['lat'], geometry['lng']
+            if result["results"]:
+                geometry = result["results"][0]["geometry"]
+                return geometry["lat"], geometry["lng"]
         return None, None
     except Exception as e:
         print(f"❌ Error for '{place_name}': {e}")
@@ -56,7 +56,6 @@ def get_coordinates(place_name, api_key=API_KEY):
 
 
 def generate_coordinates(address_list, delay=1):
-
     """
     Takes a list of addresses and returns a DataFrame with their corresponding
     latitude and longitude, using caching to avoid redundant API calls.
@@ -69,7 +68,6 @@ def generate_coordinates(address_list, delay=1):
         pd.DataFrame: A DataFrame containing the original address list along with
                       their corresponding latitude and longitude columns.
     """
-
 
     unique_places = list(set(address_list))
     cache = {}
@@ -84,16 +82,20 @@ def generate_coordinates(address_list, delay=1):
     data = []
     for place in address_list:
         coords = cache.get(place, {"latitude": None, "longitude": None})
-        data.append({
-            "place": place,
-            "latitude": coords["latitude"],
-            "longitude": coords["longitude"]
-        })
+        data.append(
+            {
+                "place": place,
+                "latitude": coords["latitude"],
+                "longitude": coords["longitude"],
+            }
+        )
 
     return pd.DataFrame(data)
 
 
-def save_coordinates_to_csv(output_path="/home/dili/Univers/HousepricePredictor/data/lat_long_address.csv"):
+def save_coordinates_to_csv(
+    output_path="/home/dili/Univers/HousepricePredictor/data/lat_long_address.csv",
+):
     """
     Main wrapper function that loads addresses, generates coordinates, and saves
     the result to a CSV file.
@@ -120,7 +122,7 @@ def main():
     Entry point for the geolocation script.
     Calls the function to process addresses and save coordinates to a CSV file.
     """
-    
+
     save_coordinates_to_csv()
 
 

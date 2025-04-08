@@ -1,11 +1,9 @@
-import pandas as pd 
+import pandas as pd
 
 
-
-
-
-def load_data( file_path = "/home/dili/Univers/HousepricePredictor/data/kashefi_dataset.csv") -> pd.DataFrame:
-
+def load_data(
+    file_path="/home/dili/Univers/HousePricePredictor/data/kashefi_dataset.csv",
+) -> pd.DataFrame:
     """
     Load data from a CSV file.
 
@@ -14,33 +12,28 @@ def load_data( file_path = "/home/dili/Univers/HousepricePredictor/data/kashefi_
 
     Returns:
     pd.DataFrame: The loaded data as a pandas DataFrame.
-    
+
     """
-    
+
     try:
         data = pd.read_csv(file_path)
 
         return data
-    
-    
+
     except FileNotFoundError:
-    
+
         print(f"Error: The file {file_path} was not found.")
-    
+
         return None
-    
+
     except pd.errors.EmptyDataError:
         print(f"Error: The file {file_path} is empty.")
-    
+
         return None
-    
 
     finally:
-    
+
         print("Data loading process completed.")
-
-
-
 
 
 def main():
@@ -49,10 +42,6 @@ def main():
     print(data.head())
 
 
-
 if __name__ == "__main__":
 
     main()
-
-
-
