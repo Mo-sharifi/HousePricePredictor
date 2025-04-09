@@ -1,9 +1,14 @@
 import requests
 import pandas as pd
 import time
-from data_loader import load_data
+from data_loader import load_tehran_data
 
-API_KEY = REMIVED
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+api_key = os.getenv("API_KEY")
 
 
 def get_all_addresses():
@@ -15,7 +20,7 @@ def get_all_addresses():
                    Returns an empty list if the column is not found or data is missing.
     """
 
-    data = load_data()
+    data = load_tehran_data()
     if data is not None and "Address" in data.columns:
         return data["Address"].dropna().tolist()
     else:
@@ -23,7 +28,7 @@ def get_all_addresses():
         return []
 
 
-def get_coordinates(place_name, api_key=API_KEY):
+def get_coordinates(place_name, api_key=api_key):
     """
     Retrieves the geographic coordinates (latitude and longitude) for a given address
     using the OpenCage Geocoding API.
@@ -51,7 +56,7 @@ def get_coordinates(place_name, api_key=API_KEY):
                 return geometry["lat"], geometry["lng"]
         return None, None
     except Exception as e:
-        print(f"❌ Error for '{place_name}': {e}")
+        print(f"Error for '{place_name}': {e}")
         return None, None
 
 
@@ -76,17 +81,18 @@ def generate_coordinates(address_list, delay=1):
         lat, lon = get_coordinates(place)
         print(f"{idx + 1}/{len(unique_places)} → {place}: {lat}, {lon}")
         cache[place] = {"latitude": lat, "longitude": lon}
-        time.sleep(delay)  # جلوگیری از بلاک شدن
+        time.sleep(delay)  # to avoid hitting the API rate limit
 
-    # بازسازی ترتیب اصلی
+    # Create a DataFrame with the original address list and their coordinates
+
     data = []
     for place in address_list:
         coords = cache.get(place, {"latitude": None, "longitude": None})
         data.append(
             {
-                "place": place,
-                "latitude": coords["latitude"],
-                "longitude": coords["longitude"],
+                "Address": place,
+                "Latitude": coords["latitude"],
+                "Longitude": coords["longitude"],
             }
         )
 
@@ -94,7 +100,7 @@ def generate_coordinates(address_list, delay=1):
 
 
 def save_coordinates_to_csv(
-    output_path="/home/dili/Univers/HousepricePredictor/data/lat_long_address.csv",
+    output_path=r"/home/dili/Univers/HousePricePredictor/data/lat_long_address.csv",
 ):
     """
     Main wrapper function that loads addresses, generates coordinates, and saves
@@ -109,12 +115,12 @@ def save_coordinates_to_csv(
 
     addresses = get_all_addresses()
     if not addresses:
-        print("⚠ لیست آدرس‌ها خالی است.")
+        print("No addresses found to geocode.")
         return
 
     df = generate_coordinates(addresses)
     df.to_csv(output_path, index=False)
-    print(f"✅ مختصات در فایل {output_path} ذخیره شد.")
+    print(f"saved successfully on : {output_path} ")
 
 
 def main():
