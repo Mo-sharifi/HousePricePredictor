@@ -51,6 +51,7 @@ def load_geolocation_data(
 
     try:
         data = pd.read_csv(file_path)
+        data.rename(columns={"place": "Address"}, inplace=True)
 
         return data
 
