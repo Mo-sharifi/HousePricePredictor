@@ -3,10 +3,12 @@ import numpy as np
 
 pd.options.display.float_format = "{:,.2f}".format
 from tabulate import tabulate
+
 from colorama import Fore, Style
 from imblearn.over_sampling import RandomOverSampler
-from data_loader import load_data
-
+from data_loader import load_tehran_data , load_geolocation_data
+import warnings
+warnings.filterwarnings('ignore')
 
 def remove_nan(df):
     """
@@ -31,8 +33,8 @@ def remove_doplicates(df):
     pd.DataFrame: The DataFrame with duplicates removed.
     """
     # Remove duplicate rows
-    data = df.drop_duplicates()
-    return data
+    df = df.drop_duplicates()
+    return df
 
 def remove_unnecessary_columns(df, columns):
     """
@@ -47,7 +49,7 @@ def remove_unnecessary_columns(df, columns):
     df = df.drop(columns=columns)
     return df
 
-def remove_outliers(df, column):
+def remove_outliers(df, columns=["Area","Price"]):
     """
     Remove outliers from a DataFrame based on the IQR method.
 
@@ -58,14 +60,19 @@ def remove_outliers(df, column):
     Returns:
     pd.DataFrame: The DataFrame with outliers removed.
     """
-    Q1 = df[column].quantile(0.25)
-    Q3 = df[column].quantile(0.75)
-    IQR = Q3 - Q1
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
-    return df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
+    for column in columns:
 
-def covert_to_numeric(df, columns):
+        Q1 = df[column].quantile(0.25)
+        Q3 = df[column].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        df= df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
+
+    return df
+
+
+def covert_to_numeric(df, columns=["Area","Parking","Warehouse","Elevator"]):
     """
     Convert specified columns in a DataFrame to numeric type.
 
@@ -79,10 +86,32 @@ def covert_to_numeric(df, columns):
     for column in columns:
         if df.dtypes[column] == "bool":
             df[column] = df[column].astype("Int8")
-        elif df[column].dtype == "object":
+        elif df.dtypes[column] == "object":
             df[column] = df[column].str.replace(",", "").astype(int)
 
     return df
+
+def add_geolocation_columns(df_main, df_geo):
+    """
+    Add latitude and longitude columns from df_geo to df_main based on matching addresses,
+    then drop the Address column from the result.
+
+    Parameters:
+    df_main (pd.DataFrame): Main dataframe containing house data (with 'Address').
+    df_geo (pd.DataFrame): Dataframe containing 'Address', 'Latitude', and 'Longitude'.
+
+    Returns:
+    pd.DataFrame: df_main with 'Latitude' and 'Longitude' columns added, and 'Address' removed.
+    """
+    df_geo = df_geo.drop_duplicates(subset='Address')
+
+
+    df_main['Latitude'] = df_main['Address'].map(df_geo.set_index('Address')['Latitude'])
+    df_main['Longitude'] = df_main['Address'].map(df_geo.set_index('Address')['Longitude'])
+
+    return df_main.drop(columns=['Address'])
+
+
 
 def preprocess_data(df):
     """
@@ -95,13 +124,24 @@ def preprocess_data(df):
     Returns:
     pd.DataFrame: The preprocessed DataFrame.
     """
+    df_no_usd = remove_unnecessary_columns(df , "Price(USD)")
+    df_no_nall = remove_nan(df_no_usd)
 
+    df_numeric = covert_to_numeric(df_no_nall)
+
+    df_no_doplicates = remove_doplicates(df_numeric)
 
     # Remove outliers
-    df = remove_outliers(df, "Area")
-    df = remove_outliers(df, "Price")
+    clean_data=  remove_outliers(df_no_doplicates)
+     
+    over_samped_data = oversample_binary_features(clean_data, ["Parking", "Warehouse", "Elevator"])
+    
 
-    return df
+    lat_long_df = load_geolocation_data()
+
+    final_df = add_geolocation_columns(over_samped_data, lat_long_df)
+
+    return final_df
 
 def oversample_binary_features(df, binary_features, target_ratio=0.4, random_state=42):
     """
@@ -148,7 +188,12 @@ def oversample_binary_features(df, binary_features, target_ratio=0.4, random_sta
 
 
 def log_dataframe(df, name="DataFrame", rows=5):
-    df["Price"] = df["Price"].apply(lambda x: f"{x:,.0f}")
+    # نسخه جدا برای نمایش که Price رو فرمت می‌کنه
+    df_display = df.copy()
+
+    if "Price" in df_display.columns and np.issubdtype(df_display["Price"].dtype, np.number):
+        df_display["Price"] = df_display["Price"].apply(lambda x: f"{x:,.0f}")
+
     print(Fore.CYAN + f"\n📊 Summary of {name}" + Style.RESET_ALL)
     print("-" * 50)
 
@@ -193,29 +238,36 @@ def log_dataframe(df, name="DataFrame", rows=5):
     # Sample preview
     print(f"\n🪞 Preview of first {rows} rows:")
     print(
-        tabulate(df.head(rows), headers="keys", tablefmt="fancy_grid", showindex=False)
+        tabulate(df_display.head(rows), headers="keys", tablefmt="fancy_grid", showindex=False)
     )
 
     # Describe numerical columns
     print(
         Fore.GREEN + "\n📊 Summary statistics for numerical columns:" + Style.RESET_ALL
     )
-    print(tabulate(df.describe().T, headers="keys", tablefmt="grid"))
+    print(tabulate(df.describe().T, headers="keys", tablefmt="fancy_grid"))
 
-    # Unique values for categorical columns
+    #Unique values for categorical columns
     cat_cols = ["Parking", "Warehouse", "Elevator"]
     print(Fore.BLUE + "\n🔎 Unique values in categorical columns:" + Style.RESET_ALL)
     for col in cat_cols:
-        uniques = df[col].unique()
-        print(f"  - {col}: {uniques[:10]}{' ...' if len(uniques) > 10 else ''}")
+        if col in df.columns:
+            uniques = df[col].unique().tolist()
+            print(f"  - {col}: {uniques[:10]}{' ...' if len(uniques) > 10 else ''}")
+
+
 
     print("-" * 50)
-
+    print(Fore.CYAN + "📊 DataFrame logging completed." + Style.RESET_ALL)
 
 def main():
-    data = load_data()
-    data_not_nan = remove_nan(data)
-    log_dataframe(data_not_nan, "Raw Data", 5)
+    data = load_tehran_data()
+    log_dataframe(data,"Raw Date",5)
+
+
+    clean_df = preprocess_data(data)
+
+    log_dataframe(clean_df, "Preprossed Data", 5)
 
 
 if __name__ == "__main__":
